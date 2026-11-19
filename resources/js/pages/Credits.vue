@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import FlashMessage from '@/components/FlashMessage.vue';
 import Money from '@/components/Money.vue';
+import TruncatedText from '@/components/TruncatedText.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -77,7 +78,9 @@ const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyl
                     <p v-if="reservedNanos > 0" class="mt-1 text-sm text-muted-foreground">
                         + <Money :nanos="reservedNanos" /> reserved for generations in progress
                     </p>
-                    <p class="mt-3 text-xs text-muted-foreground">1 credit = 1 US dollar. Amounts are tracked to a billionth of a dollar; hover any amount to see it exactly.</p>
+                    <p class="mt-3 text-xs text-muted-foreground">
+                        1 credit = 1 US dollar. Amounts are tracked to a billionth of a dollar; hover any amount to see it exactly.
+                    </p>
                 </div>
 
                 <div class="rounded-xl border bg-card p-5 shadow-sm">
@@ -115,9 +118,7 @@ const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyl
                             </Button>
                         </div>
                         <p v-if="custom.errors.amount" class="mt-2 text-sm text-red-600">{{ custom.errors.amount }}</p>
-                        <p v-else class="mt-2 text-xs text-muted-foreground">
-                            Between ${{ customMin }} and ${{ customMax }}, up to two decimals.
-                        </p>
+                        <p v-else class="mt-2 text-xs text-muted-foreground">Between ${{ customMin }} and ${{ customMax }}, up to two decimals.</p>
                     </form>
                 </div>
             </section>
@@ -139,13 +140,16 @@ const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyl
                                 <td class="whitespace-nowrap px-5 py-2 text-muted-foreground">{{ when(t.created_at) }}</td>
                                 <td class="px-5 py-2">
                                     <span class="font-medium">{{ typeLabels[t.type] }}</span>
-                                    <span v-if="t.prompt" class="ml-2 line-clamp-1 inline text-muted-foreground">“{{ t.prompt }}”</span>
+                                    <span v-if="t.prompt" class="ml-2 text-muted-foreground"
+                                        >“<TruncatedText :text="t.prompt" :max-words="50" />”</span
+                                    >
                                 </td>
                                 <td
                                     class="whitespace-nowrap px-5 py-2 text-right"
                                     :class="t.amount_nanos > 0 ? 'text-emerald-700 dark:text-emerald-400' : ''"
                                 >
-                                    {{ t.amount_nanos > 0 ? '+' : '' }}<Money :nanos="t.amount_nanos" :decimals="Math.abs(t.amount_nanos) >= NANOS_PER_USD ? 2 : 4" />
+                                    {{ t.amount_nanos > 0 ? '+' : ''
+                                    }}<Money :nanos="t.amount_nanos" :decimals="Math.abs(t.amount_nanos) >= NANOS_PER_USD ? 2 : 4" />
                                 </td>
                             </tr>
                         </tbody>

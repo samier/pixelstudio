@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -46,9 +47,13 @@ class HandleInertiaRequests extends Middleware
                 'balanceNanos' => $user ? (int) $user->newQuery()->whereKey($user->id)->value('balance_nanos') : null,
                 'isAdmin' => $user?->isAdmin() ?? false,
             ],
-            'flash' => [
-                'success' => fn () => $request->session()->get('success'),
-            ],
+            // Each flashed message gets a fresh id, so the page can tell a new message from an old one that is
+            // still sitting in the props (partial reloads keep the previous value).
+            'flash' => function () use ($request) {
+                $success = $request->session()->get('success');
+
+                return ['success' => $success, 'id' => $success === null ? null : (string) Str::uuid()];
+            },
         ];
     }
 }

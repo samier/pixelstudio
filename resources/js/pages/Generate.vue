@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useLiveReload } from '@/composables/useLiveReload';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { estimate as estimateCost, type TokenCounts } from '@/lib/estimate';
+import { GENERATION_QUEUED, showFlash } from '@/lib/flash';
 import type { BreadcrumbItem, Generation, Pricing, SharedData } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { AlertTriangle, ImagePlus, Loader2, Wand2, X } from 'lucide-vue-next';
@@ -65,7 +66,9 @@ const addReference = () => form.reference_images.length < props.limits.maxRefere
 const removeReference = (i: number) => form.reference_images.splice(i, 1);
 const addKeyword = (keyword: string) => (form.prompt = `${form.prompt.trimEnd()} ${keyword}`.trimStart());
 
-const submit = () => form.post(route('generations.store'), { preserveScroll: true });
+// Shown here as well as flashed by the server: a live-status reload running at the same moment can use up
+// the server's flash before this page reads it.
+const submit = () => form.post(route('generations.store'), { preserveScroll: true, onSuccess: () => showFlash(GENERATION_QUEUED) });
 
 const hasInFlight = computed(() => props.recent.data.some((g) => g.status === 'queued' || g.status === 'processing'));
 useLiveReload(hasInFlight, ['recent']);
@@ -224,8 +227,8 @@ useLiveReload(hasInFlight, ['recent']);
                     </table>
 
                     <p class="text-xs leading-relaxed text-muted-foreground">
-                        Pixelforge's price plus {{ markupPercent }}%. Reasoning and exact text tokens are only known once the image is done, so
-                        we reserve the maximum while it runs and then charge the exact cost. <strong>Failed generations are free.</strong>
+                        Pixelforge's price plus {{ markupPercent }}%. Reasoning and exact text tokens are only known once the image is done, so we
+                        reserve the maximum while it runs and then charge the exact cost. <strong>Failed generations are free.</strong>
                     </p>
 
                     <div class="flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-sm">

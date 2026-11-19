@@ -21,7 +21,7 @@ export interface NavItem {
 export interface SharedData {
     [key: string]: unknown;
     name: string;
-    flash: { success: string | null };
+    flash: { success: string | null; id: string | null };
     auth: Auth;
     errors: Record<string, string>;
     ziggy: {

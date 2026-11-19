@@ -2,6 +2,7 @@
 import Money from '@/components/Money.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { Button } from '@/components/ui/button';
+import { GENERATION_QUEUED, showFlash } from '@/lib/flash';
 import type { Generation } from '@/types';
 import { useForm } from '@inertiajs/vue3';
 import { AlertTriangle, ImageOff, RotateCcw, Sparkles } from 'lucide-vue-next';
@@ -19,7 +20,8 @@ const aspect = computed(() => {
 });
 
 const retry = useForm({});
-const submitRetry = () => retry.post(route('generations.retry', { generation: g.value.id }), { preserveScroll: true });
+const submitRetry = () =>
+    retry.post(route('generations.retry', { generation: g.value.id }), { preserveScroll: true, onSuccess: () => showFlash(GENERATION_QUEUED) });
 
 const createdAt = computed(() =>
     new Date(g.value.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
@@ -58,9 +60,7 @@ const delta = computed(() => (g.value.charged_nanos === null ? null : g.value.ch
             >
                 <AlertTriangle class="size-6" />
                 <p class="text-sm">{{ g.error_message ?? 'The generation failed. You were not charged.' }}</p>
-                <Button size="sm" variant="outline" class="mt-1" :disabled="retry.processing" @click="submitRetry">
-                    <RotateCcw /> Try again
-                </Button>
+                <Button size="sm" variant="outline" class="mt-1" :disabled="retry.processing" @click="submitRetry"> <RotateCcw /> Try again </Button>
             </div>
         </div>
 
@@ -84,9 +84,7 @@ const delta = computed(() => (g.value.charged_nanos === null ? null : g.value.ch
                 <dt class="text-muted-foreground">Estimated</dt>
                 <dd class="text-right">
                     ≈ <Money :nanos="g.estimated_nanos" />
-                    <span class="text-muted-foreground">
-                        (<Money :nanos="g.estimated_min_nanos" />–<Money :nanos="g.estimated_max_nanos" />)
-                    </span>
+                    <span class="text-muted-foreground"> (<Money :nanos="g.estimated_min_nanos" />–<Money :nanos="g.estimated_max_nanos" />) </span>
                 </dd>
 
                 <dt class="text-muted-foreground">Actual</dt>
